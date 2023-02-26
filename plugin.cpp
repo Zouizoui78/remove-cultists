@@ -56,20 +56,18 @@ public:
         }
 
         logger::info("{} is in the arcanaeum, looking for cultists", player->GetName());
-        auto forms = location->GetAllForms();
+        auto forms = RE::TESForm::GetAllForms();
         forms.second.get().LockForRead();
         uint8_t count = 0;
         for (const auto &[key, val] : *(forms.first)) {
             RE::Actor *actor = val->As<RE::Actor>();
             if (
                 actor &&
-                // !actor->IsDead() &&
                 actor != player &&
                 actor->Is3DLoaded() &&
                 actor->GetCurrentLocation() == location &&
                 strcmp(actor->GetName(), "Boethiah Cultist") == 0
             ) {
-                // actor->KillImpl(player, 1e6, false, false);
                 actor->SetDelete(true);
                 count++;
             }
