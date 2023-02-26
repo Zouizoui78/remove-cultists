@@ -32,6 +32,14 @@ public:
         return singleton;
     }
 
+    bool CheckActor(const RE::Actor *actor, const RE::PlayerCharacter *player) const {
+        return  actor &&
+                actor != player &&
+                actor->Is3DLoaded() &&
+                actor->GetCurrentLocation() == player->GetCurrentLocation() &&
+                strcmp(actor->GetName(), "Boethiah Cultist") == 0;
+    }
+
     RE::BSEventNotifyControl ProcessEvent(
         const RE::MenuOpenCloseEvent* event,
         RE::BSTEventSource<RE::MenuOpenCloseEvent>*) override
@@ -55,19 +63,13 @@ public:
             return RE::BSEventNotifyControl::kContinue;
         }
 
-        logger::info("{} is in the arcanaeum, looking for cultists", player->GetName());
+        logger::info("{} is in the Arcanaeum. Looking for cultists...", player->GetName());
         auto forms = RE::TESForm::GetAllForms();
         forms.second.get().LockForRead();
         uint8_t count = 0;
         for (const auto &[key, val] : *(forms.first)) {
             RE::Actor *actor = val->As<RE::Actor>();
-            if (
-                actor &&
-                actor != player &&
-                actor->Is3DLoaded() &&
-                actor->GetCurrentLocation() == location &&
-                strcmp(actor->GetName(), "Boethiah Cultist") == 0
-            ) {
+            if (CheckActor(actor, player)) {
                 actor->SetDelete(true);
                 count++;
             }
