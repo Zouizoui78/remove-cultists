@@ -32,7 +32,7 @@ public:
         return singleton;
     }
 
-    bool CheckActor(const RE::Actor *actor, const RE::PlayerCharacter *player) const {
+    bool CheckActor(const RE::Actor* actor, const RE::PlayerCharacter* player) const {
         return  actor &&
                 actor != player &&
                 actor->Is3DLoaded() &&
@@ -48,12 +48,12 @@ public:
             return RE::BSEventNotifyControl::kContinue;
         }
 
-        auto player = RE::PlayerCharacter::GetSingleton();
+        auto* player = RE::PlayerCharacter::GetSingleton();
         if (!player) {
             return RE::BSEventNotifyControl::kContinue;
         }
 
-        auto location = player->GetCurrentLocation();
+        auto* location = player->GetCurrentLocation();
         if (!location) {
             return RE::BSEventNotifyControl::kContinue;
         }
@@ -68,7 +68,7 @@ public:
         forms.second.get().LockForRead();
         uint8_t count = 0;
         for (const auto &[key, val] : *(forms.first)) {
-            RE::Actor *actor = val->As<RE::Actor>();
+            RE::Actor* actor = val->As<RE::Actor>();
             if (CheckActor(actor, player)) {
                 actor->SetDelete(true);
                 count++;
@@ -90,7 +90,7 @@ SKSEPluginLoad(const SKSE::LoadInterface* skse) {
     SKSE::Init(skse);
     SetupLog();
 
-    auto *ui_source = RE::UI::GetSingleton();
+    auto* ui_source = RE::UI::GetSingleton();
     if (!ui_source) {
         return false;
     }
