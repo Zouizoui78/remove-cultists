@@ -90,10 +90,8 @@ SKSEPluginLoad(const SKSE::LoadInterface* skse) {
     SKSE::Init(skse);
     SetupLog();
 
-    auto *event_source = RE::ScriptEventSourceHolder::GetSingleton();
     auto *ui_source = RE::UI::GetSingleton();
-
-    if (!event_source || !ui_source) {
+    if (!ui_source) {
         return false;
     }
 
