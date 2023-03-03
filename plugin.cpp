@@ -36,6 +36,7 @@ public:
         return  actor &&
                 actor != player &&
                 actor->Is3DLoaded() &&
+                // this check is to prevent searching for cultists in cells still in memory
                 actor->GetCurrentLocation() == player->GetCurrentLocation() &&
                 strcmp(actor->GetName(), "Boethiah Cultist") == 0;
     }
@@ -44,16 +45,18 @@ public:
         const RE::MenuOpenCloseEvent* event,
         RE::BSTEventSource<RE::MenuOpenCloseEvent>*) override
     {
+        // if event->menuName == "Loading menu" and !event->opening
+        // then we are right after a loading screen
         if (!event || event->opening || event->menuName != "Loading Menu") {
             return RE::BSEventNotifyControl::kContinue;
         }
 
-        auto* player = RE::PlayerCharacter::GetSingleton();
+        RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
         if (!player) {
             return RE::BSEventNotifyControl::kContinue;
         }
 
-        auto* location = player->GetCurrentLocation();
+        RE::BGSLocation* location = player->GetCurrentLocation();
         if (!location) {
             return RE::BSEventNotifyControl::kContinue;
         }
@@ -70,6 +73,8 @@ public:
         for (const auto &[key, val] : *(forms.first)) {
             RE::Actor* actor = val->As<RE::Actor>();
             if (CheckActor(actor, player)) {
+                // don't know if this is the same as the delete command ingame
+                // but it seems to works
                 actor->SetDelete(true);
                 count++;
             }
@@ -77,7 +82,7 @@ public:
         forms.second.get().UnlockForRead();
 
         if (count != 0) {
-            auto msg = std::format("Deleted {} cultists", count);
+            std::string msg = std::format("Deleted {} cultists", count);
             logger::info("{}", msg);
             RE::DebugNotification(msg.c_str());
         }
@@ -90,12 +95,12 @@ SKSEPluginLoad(const SKSE::LoadInterface* skse) {
     SKSE::Init(skse);
     SetupLog();
 
-    auto* ui_source = RE::UI::GetSingleton();
+    RE::UI* ui_source = RE::UI::GetSingleton();
     if (!ui_source) {
         return false;
     }
 
-    auto &event_handler = EventHandler::GetSingleton();
+    EventHandler &event_handler = EventHandler::GetSingleton();
     ui_source->AddEventSink<RE::MenuOpenCloseEvent>(&event_handler);
 
     return true;
